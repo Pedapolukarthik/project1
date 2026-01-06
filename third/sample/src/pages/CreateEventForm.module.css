@@ -1,0 +1,159 @@
+.createEventFormContainer {
+  --createEventFormPrimary: #4361ee;
+  --createEventFormPrimaryLight: #4895ef;
+  --createEventFormSecondary: #3f37c9;
+  --createEventFormAccent: #f72585;
+  --createEventFormDark: #1a1a2e;
+  --createEventFormLight: #f8f9fa;
+  --createEventFormGray: #6c757d;
+  --createEventFormGrayLight: #e9ecef;
+  --createEventFormSuccess: #4cc9f0;
+  --createEventFormDanger: #ef233c;
+
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.createEventFormTitle {
+  text-align: center;
+  color: var(--createEventFormDark);
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+  font-weight: 600;
+  position: relative;
+}
+
+.createEventFormTitle::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--createEventFormPrimary);
+  margin: 0.5rem auto 0;
+  border-radius: 2px;
+}
+
+.createEventForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.createEventFormGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.createEventFormLabel {
+  font-weight: 500;
+  color: var(--createEventFormDark);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.3rem;
+}
+
+.createEventFormIcon {
+  font-size: 1.1em;
+  min-width: 1.2em;
+  color: var(--createEventFormPrimary);
+}
+
+.createEventFormRow {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.createEventFormRow .createEventFormGroup {
+  flex: 1;
+}
+
+.createEventFormInput,
+.createEventFormTextarea {
+  padding: 0.8rem 1rem;
+  border: 2px solid var(--createEventFormGrayLight);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #f8fafc;
+}
+
+.createEventFormInput:focus,
+.createEventFormTextarea:focus {
+  outline: none;
+  border-color: var(--createEventFormPrimary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.createEventFormTextarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.createEventFormSubmitBtn {
+  padding: 0.8rem 1.5rem;
+  background: var(--createEventFormPrimary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.createEventFormSubmitBtn:hover {
+  background: var(--createEventFormSecondary);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.createEventFormSubmitBtn:disabled {
+  background: var(--createEventFormGrayLight);
+  color: var(--createEventFormGray);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.createEventFormSubmitIcon {
+  font-size: 1em;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .createEventFormRow {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .createEventFormContainer {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .createEventFormTitle {
+    font-size: 1.5rem;
+  }
+  
+  .createEventFormInput,
+  .createEventFormTextarea {
+    padding: 0.7rem 0.9rem;
+  }
+  
+  .createEventFormLabel {
+    gap: 0.6rem;
+  }
+}
