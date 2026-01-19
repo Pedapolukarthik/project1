@@ -101,3 +101,4 @@ node testRegistrationEndpoint.js
 This will test if the registration endpoint is working.
 
 
+

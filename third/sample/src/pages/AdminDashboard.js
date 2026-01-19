@@ -25,7 +25,7 @@ function AdminDashboard() {
   });
 
   const fetchEvents = () => {
-    axios.get('http://localhost:5000/api/events/all')
+    axios.get('https://event-management-backend-production-152a.up.railway.app/api/events/all')
       .then(res => setEvents(res.data))
       .catch(err => console.error("Failed to fetch events", err));
   };
@@ -44,7 +44,7 @@ function AdminDashboard() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        await axios.delete(`http://localhost:5000/api/events/delete/${id}`);
+        await axios.delete(`https://event-management-backend-production-152a.up.railway.app/api/events/delete/${id}`);
         setEvents(events.filter(e => e.id !== id));
       } catch (error) {
         console.error("Delete failed", error);
@@ -66,7 +66,7 @@ function AdminDashboard() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/api/events/update/${editingEvent.id}`, formData);
+      await axios.put(`https://event-management-backend-production-152a.up.railway.app/api/events/update/${editingEvent.id}`, formData);
       setShowEditModal(false);
       fetchEvents();
     } catch (error) {
@@ -81,7 +81,7 @@ function AdminDashboard() {
     setRegistrations([]);
 
     try {
-      const response = await axios.get(`http://localhost:5000/api/events/${event.id}/registrations`);
+      const response = await axios.get(`https://event-management-backend-production-152a.up.railway.app/api/events/${event.id}/registrations`);
       setRegistrations(response.data.registrations || []);
     } catch (error) {
       console.error("Failed to fetch registrations", error);

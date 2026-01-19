@@ -36,7 +36,7 @@ function StudentDashboard() {
   });
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/events/all')
+    axios.get('https://event-management-backend-production-152a.up.railway.app/api/events/all')
       .then(res => setEvents(res.data))
       .catch(() => alert('Failed to load events'));
   }, []);
@@ -55,7 +55,7 @@ function StudentDashboard() {
     setRegisteringEventId(eventId);
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/events/${eventId}/register`,
+        `https://event-management-backend-production-152a.up.railway.app/api/events/${eventId}/register`,
         studentInfo,
         {
           headers: {

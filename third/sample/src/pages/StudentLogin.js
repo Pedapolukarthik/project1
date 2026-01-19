@@ -17,7 +17,7 @@ function StudentLogin() {
 
     try {
       // ✅ Make API call to backend
-      const res = await axios.post('http://localhost:5000/api/login', {
+      const res = await axios.post('https://event-management-backend-production-152a.up.railway.app/api/login', {
         username,
         password
       });

@@ -12,7 +12,7 @@ function EditEventForm({ event, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5000/api/events/update/${formData.id}`, formData);
+      await axios.put(`https://event-management-backend-production-152a.up.railway.app/api/events/update/${formData.id}`, formData);
       onClose();
     } catch (error) {
       console.error("Update failed", error);

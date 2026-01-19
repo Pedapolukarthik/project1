@@ -394,3 +394,5 @@ curl http://localhost:5000/api/events/1/registrations
 **The system is now fully functional!** 🚀
 
 
+
+

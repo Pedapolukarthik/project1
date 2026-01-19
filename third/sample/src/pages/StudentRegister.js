@@ -18,7 +18,7 @@ function StudentRegister() {
     }
 
     try {
-      const res = await axios.post('http://localhost:5000/api/register', {
+      const res = await axios.post('https://event-management-backend-production-152a.up.railway.app/api/register', {
         username,
         password,
       });

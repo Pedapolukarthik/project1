@@ -23,7 +23,7 @@ function CreateEventForm({ onClose, onEventCreated }) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await axios.post('http://localhost:5000/api/events/create', formData);
+      await axios.post('https://event-management-backend-production-152a.up.railway.app/api/events/create', formData);
       alert('Event created successfully!');
       onEventCreated(); // close form + refresh
     } catch (err) {
