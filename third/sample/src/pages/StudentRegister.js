@@ -1,7 +1,7 @@
 // StudentRegister.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../api';
 import './Login.css'; // Reuse login styles
 
 function StudentRegister() {
@@ -18,7 +18,7 @@ function StudentRegister() {
     }
 
     try {
-      const res = await axios.post('https://event-management-backend-production-152a.up.railway.app/api/register', {
+      const res = await API.post('/register', {
         username,
         password,
       });

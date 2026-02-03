@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import API from '../api'; 
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaLink, FaPaperPlane, FaTimes } from 'react-icons/fa';
 import styles from './CreateEventForm.module.css';
 
@@ -23,7 +23,7 @@ function CreateEventForm({ onClose, onEventCreated }) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await axios.post('https://event-management-backend-production-152a.up.railway.app/api/events/create', formData);
+      await API.post('/events/create', formData);
       alert('Event created successfully!');
       onEventCreated(); // close form + refresh
     } catch (err) {

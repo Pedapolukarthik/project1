@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import API from '../api';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUserGraduate, FaHome, FaSignOutAlt, FaClock, FaLink, FaCheckCircle } from 'react-icons/fa';
 import { MdComputer, MdEvent, MdBook, MdAssignment, MdGrade, MdGroups } from 'react-icons/md';
 import './Dashboard.css';
@@ -36,7 +36,7 @@ function StudentDashboard() {
   });
 
   useEffect(() => {
-    axios.get('https://event-management-backend-production-152a.up.railway.app/api/events/all')
+    API.get('/events/all')
       .then(res => setEvents(res.data))
       .catch(() => alert('Failed to load events'));
   }, []);
@@ -54,14 +54,9 @@ function StudentDashboard() {
   const handleRegister = async (eventId) => {
     setRegisteringEventId(eventId);
     try {
-      const response = await axios.post(
-        `https://event-management-backend-production-152a.up.railway.app/api/events/${eventId}/register`,
-        studentInfo,
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+      const response = await API.post(
+        `/events/${eventId}/register`,
+        studentInfo
       );
       
       alert('Successfully registered for the event!');

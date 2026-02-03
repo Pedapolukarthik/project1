@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserGraduate, FaLock, FaSignInAlt } from 'react-icons/fa';
-import axios from 'axios'; // ✅ added for API call
+import API from '../api'; // ✅ added for API call
 import './Login.css';
 
 function StudentLogin() {
@@ -17,10 +17,10 @@ function StudentLogin() {
 
     try {
       // ✅ Make API call to backend
-      const res = await axios.post('https://event-management-backend-production-152a.up.railway.app/api/login', {
-        username,
-        password
-      });
+      const res = await API.post('/login', {
+  username,
+  password
+});
 
       if (res.status === 200 && res.data.message === 'Login successful') {
         // Save username to localStorage so it can be used for registration

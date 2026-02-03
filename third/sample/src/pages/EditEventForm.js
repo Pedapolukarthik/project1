@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import '../components/EditEventForm.css';
-import axios from 'axios';
+import API from '../api';
 
 function EditEventForm({ event, onClose }) {
   const [formData, setFormData] = useState({ ...event });
@@ -12,7 +12,7 @@ function EditEventForm({ event, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`https://event-management-backend-production-152a.up.railway.app/api/events/update/${formData.id}`, formData);
+      await API.put(`/events/update/${formData.id}`, formData);
       onClose();
     } catch (error) {
       console.error("Update failed", error);

@@ -3,7 +3,7 @@ import './Dashboard.css';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUserTie, FaUsers, FaClock, FaLink, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import { MdEventAvailable, MdPeople, MdEvent, MdPendingActions, MdTrendingUp } from 'react-icons/md';
 import CreateEventForm from './CreateEventForm';
-import axios from 'axios';
+import API from '../api';
 
 function AdminDashboard() {
   const [events, setEvents] = useState([]);
@@ -25,7 +25,7 @@ function AdminDashboard() {
   });
 
   const fetchEvents = () => {
-    axios.get('https://event-management-backend-production-152a.up.railway.app/api/events/all')
+    API.get('/events/all')
       .then(res => setEvents(res.data))
       .catch(err => console.error("Failed to fetch events", err));
   };
@@ -44,7 +44,7 @@ function AdminDashboard() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
       try {
-        await axios.delete(`https://event-management-backend-production-152a.up.railway.app/api/events/delete/${id}`);
+        await API.delete(`/events/delete/${id}`);
         setEvents(events.filter(e => e.id !== id));
       } catch (error) {
         console.error("Delete failed", error);
@@ -66,7 +66,7 @@ function AdminDashboard() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`https://event-management-backend-production-152a.up.railway.app/api/events/update/${editingEvent.id}`, formData);
+      await API.put(`/events/update/${editingEvent.id}`, formData);
       setShowEditModal(false);
       fetchEvents();
     } catch (error) {
@@ -81,7 +81,7 @@ function AdminDashboard() {
     setRegistrations([]);
 
     try {
-      const response = await axios.get(`https://event-management-backend-production-152a.up.railway.app/api/events/${event.id}/registrations`);
+      const response = await API.get(`/events/${event.id}/registrations`);
       setRegistrations(response.data.registrations || []);
     } catch (error) {
       console.error("Failed to fetch registrations", error);
@@ -143,7 +143,7 @@ function AdminDashboard() {
       <header className="dashboard-header-modern">
         <div className="header-content">
           <div className="welcome-message-modern">
-            <h1>Admin Dashboard</h1>
+            <h1>Karthik Dashboard</h1>
             <p>Welcome back, <span className="admin-name">Administrator</span></p>
           </div>
           <div className="header-actions-modern">

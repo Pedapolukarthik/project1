@@ -1899,6 +1899,104 @@ button {
   }
 }
 
+/* ===== Enhanced Admin Dashboard Visuals ===== */
+.admin-dashboard {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-dashboard::before,
+.admin-dashboard::after {
+  content: '';
+  position: absolute;
+  width: 480px;
+  height: 480px;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.25;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.admin-dashboard::before {
+  top: -160px;
+  left: -120px;
+  background: radial-gradient(circle, rgba(67, 97, 238, 0.8) 0%, transparent 70%);
+  animation: floatAdmin 18s ease-in-out infinite;
+}
+
+.admin-dashboard::after {
+  bottom: -180px;
+  right: -140px;
+  background: radial-gradient(circle, rgba(247, 37, 133, 0.7) 0%, transparent 70%);
+  animation: floatAdmin 22s ease-in-out infinite reverse;
+}
+
+@keyframes floatAdmin {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -20px) scale(1.05); }
+}
+
+.dashboard-header-modern,
+.stats-grid-modern,
+.events-section-modern {
+  position: relative;
+  z-index: 1;
+}
+
+.stat-card-modern {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f9ff 100%);
+}
+
+.stat-card-modern:hover {
+  transform: translateY(-10px);
+}
+
+.admin-event-card-modern {
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbff 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-event-card-modern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(67, 97, 238, 0.35), rgba(247, 37, 133, 0.35));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.admin-event-card-modern:hover::before {
+  opacity: 1;
+}
+
+.create-btn-modern {
+  position: relative;
+  overflow: hidden;
+}
+
+.create-btn-modern::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -20%;
+  width: 30%;
+  height: 200%;
+  background: rgba(255, 255, 255, 0.35);
+  transform: translateY(-50%) skewX(-20deg);
+  transition: left 0.5s ease;
+}
+
+.create-btn-modern:hover::after {
+  left: 120%;
+}
+
 
 
 
