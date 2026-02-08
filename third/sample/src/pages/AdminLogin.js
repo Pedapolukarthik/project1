@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaUserShield, FaLock, FaSignInAlt } from 'react-icons/fa';
+import API from '../api';
 import './Login.css';
 
 function AdminLogin() {
@@ -10,19 +11,27 @@ function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      if (username === '22a81a43b3' && password === 'karthik') {
+    try {
+      const res = await API.post('/login', { username, password });
+      if (res.status === 200 && res.data.user?.role === 'admin') {
+        localStorage.setItem('token', res.data.token || '');
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userRole', 'admin');
+        localStorage.setItem('userId', res.data.user?.id || '');
+        localStorage.setItem('username', res.data.user?.username || username);
         navigate('/admin-dashboard');
       } else {
         alert('Invalid admin credentials');
       }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Login failed');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (

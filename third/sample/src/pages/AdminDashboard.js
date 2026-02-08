@@ -4,6 +4,7 @@ import { FaCalendarAlt, FaMapMarkerAlt, FaUserTie, FaUsers, FaClock, FaLink, FaE
 import { MdEventAvailable, MdPeople, MdEvent, MdPendingActions, MdTrendingUp } from 'react-icons/md';
 import CreateEventForm from './CreateEventForm';
 import API from '../api';
+import Toast from '../components/Toast';
 
 function AdminDashboard() {
   const [events, setEvents] = useState([]);
@@ -14,6 +15,18 @@ function AdminDashboard() {
   const [showRegistrations, setShowRegistrations] = useState(false);
   const [registrations, setRegistrations] = useState([]);
   const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+  const [analytics, setAnalytics] = useState({
+    total_events: 0,
+    total_registrations: 0,
+    active_events: 0,
+    completed_events: 0
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [sortOrder, setSortOrder] = useState('latest');
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState('');
+  const [toast, setToast] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -21,17 +34,47 @@ function AdminDashboard() {
     date: '',
     time: '',
     location: '',
-    registration_link: ''
+    registration_link: '',
+    capacity: ''
   });
 
-  const fetchEvents = () => {
-    API.get('/events/all')
-      .then(res => setEvents(res.data))
-      .catch(err => console.error("Failed to fetch events", err));
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const fetchEvents = async () => {
+    setIsLoading(true);
+    setLoadError('');
+    try {
+      const params = {};
+      if (searchQuery.trim()) params.q = searchQuery.trim();
+      if (statusFilter !== 'all') params.status = statusFilter;
+      if (sortOrder) params.sort = sortOrder;
+      const res = await API.get('/events/all', { params });
+      setEvents(res.data);
+    } catch (err) {
+      setLoadError('Failed to fetch events');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAnalytics = async () => {
+    try {
+      const res = await API.get('/events/analytics/admin');
+      setAnalytics(res.data);
+    } catch (err) {
+      console.error('Failed to fetch analytics', err);
+    }
   };
 
   useEffect(() => {
     fetchEvents();
+  }, [searchQuery, statusFilter, sortOrder]);
+
+  useEffect(() => {
+    fetchAnalytics();
   }, []);
 
   const handleCreateClick = () => setShowCreateForm(true);
@@ -46,8 +89,10 @@ function AdminDashboard() {
       try {
         await API.delete(`/events/delete/${id}`);
         setEvents(events.filter(e => e.id !== id));
+        showToast('Event deleted successfully', 'success');
       } catch (error) {
         console.error("Delete failed", error);
+        showToast('Failed to delete event', 'error');
       }
     }
   };
@@ -66,11 +111,16 @@ function AdminDashboard() {
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.put(`/events/update/${editingEvent.id}`, formData);
+      await API.put(`/events/update/${editingEvent.id}`, {
+        ...formData,
+        capacity: formData.capacity ? Number(formData.capacity) : null,
+      });
       setShowEditModal(false);
       fetchEvents();
+      showToast('Event updated successfully', 'success');
     } catch (error) {
       console.error("Update failed", error);
+      showToast('Failed to update event', 'error');
     }
   };
 
@@ -98,17 +148,39 @@ function AdminDashboard() {
     setRegistrations([]);
   };
 
-  // Calculate real stats from events
-  const totalRegistrations = registrations.length > 0 ? registrations.length : 0;
-  const activeEventsCount = events.length;
-  
+  const handleExportRegistrations = async () => {
+    if (!selectedEvent) return;
+    try {
+      const response = await API.get(`/events/${selectedEvent.id}/registrations`, {
+        params: { format: 'csv' },
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `event_${selectedEvent.id}_registrations.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      showToast('Failed to export registrations', 'error');
+    }
+  };
+
+  // Admin analytics from API
+  const totalRegistrations = analytics.total_registrations || 0;
+  const activeEventsCount = analytics.active_events || 0;
+  const completedEventsCount = analytics.completed_events || 0;
+  const totalEventsCount = analytics.total_events || 0;
+
   const stats = [
     { 
-      title: 'Total Students', 
-      value: '1,245', 
-      change: '+5.2%', 
+      title: 'Total Events', 
+      value: totalEventsCount.toString(), 
+      change: `+${totalEventsCount}`, 
       trend: 'up',
-      icon: <MdPeople />,
+      icon: <MdEvent />,
       color: 'var(--stat-blue)'
     },
     { 
@@ -116,29 +188,36 @@ function AdminDashboard() {
       value: activeEventsCount.toString(), 
       change: `+${activeEventsCount}`, 
       trend: 'up',
-      icon: <MdEvent />,
+      icon: <MdPendingActions />,
       color: 'var(--stat-purple)'
     },
     { 
-      title: 'Pending Requests', 
-      value: '23', 
-      change: '-8', 
-      trend: 'down',
-      icon: <MdPendingActions />,
+      title: 'Completed Events', 
+      value: completedEventsCount.toString(), 
+      change: `+${completedEventsCount}`, 
+      trend: 'up',
+      icon: <MdTrendingUp />,
       color: 'var(--stat-orange)'
     },
     { 
-      title: 'New Registrations', 
-      value: totalRegistrations > 0 ? totalRegistrations.toString() : '48', 
-      change: '+12.5%', 
+      title: 'Total Registrations', 
+      value: totalRegistrations.toString(), 
+      change: `+${totalRegistrations}`, 
       trend: 'up',
-      icon: <MdTrendingUp />,
+      icon: <MdPeople />,
       color: 'var(--stat-green)'
     }
   ];
 
   return (
     <div className="dashboard-container admin-dashboard">
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
       {/* Modern Gradient Header */}
       <header className="dashboard-header-modern">
         <div className="header-content">
@@ -185,110 +264,163 @@ function AdminDashboard() {
             <h2>Upcoming Events</h2>
             <span className="event-count-badge">{events.length} Events</span>
           </div>
-          <button className="create-btn-modern" onClick={handleCreateClick}>
-            <span className="btn-icon">+</span>
-            Create Event
-          </button>
-        </div>
-
-        {events.length === 0 ? (
-          <div className="empty-events">
-            <MdEventAvailable className="empty-icon" />
-            <p>No events yet. Create your first event!</p>
+          <div className="event-filters">
+            <input
+              className="filter-input"
+              type="text"
+              placeholder="Search events..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <select
+              className="filter-select"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="Upcoming">Upcoming</option>
+              <option value="Ongoing">Ongoing</option>
+              <option value="Completed">Completed</option>
+            </select>
+            <select
+              className="filter-select"
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+            >
+              <option value="latest">Latest</option>
+              <option value="oldest">Oldest</option>
+            </select>
             <button className="create-btn-modern" onClick={handleCreateClick}>
               <span className="btn-icon">+</span>
               Create Event
             </button>
           </div>
-        ) : (
-          <div className="admin-events-grid-modern">
-            {events.map((event, index) => (
-              <div key={event.id} className="admin-event-card-modern" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="event-card-header">
-                  <div className="event-icon-modern">
-                    <MdEventAvailable />
+        </div>
+
+        {isLoading && (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading events...</p>
+          </div>
+        )}
+        {loadError && !isLoading && (
+          <div className="empty-events">
+            <MdEventAvailable className="empty-icon" />
+            <p>{loadError}</p>
+          </div>
+        )}
+
+        {!isLoading && !loadError && (
+          events.length === 0 ? (
+            <div className="empty-events">
+              <MdEventAvailable className="empty-icon" />
+              <p>No events yet. Create your first event!</p>
+              <button className="create-btn-modern" onClick={handleCreateClick}>
+                <span className="btn-icon">+</span>
+                Create Event
+              </button>
+            </div>
+          ) : (
+            <div className="admin-events-grid-modern">
+              {events.map((event, index) => (
+                <div key={event.id} className="admin-event-card-modern" style={{ animationDelay: `${index * 0.1}s` }}>
+                  <div className="event-card-header">
+                    <div className="event-icon-modern">
+                      <MdEventAvailable />
+                    </div>
+                    <div className="event-title-section">
+                      <h3>{event.title}</h3>
+                      {event.description && (
+                        <p className="event-description">{event.description.substring(0, 60)}...</p>
+                      )}
+                    </div>
                   </div>
-                  <div className="event-title-section">
-                    <h3>{event.title}</h3>
-                    {event.description && (
-                      <p className="event-description">{event.description.substring(0, 60)}...</p>
+                  
+                  <div className="event-details-modern">
+                    <div className="detail-item">
+                      <FaCalendarAlt className="detail-icon" />
+                      <div>
+                        <span className="detail-label">Date</span>
+                        <span className="detail-value">{new Date(event.date).toLocaleDateString('en-US', { 
+                          weekday: 'short', 
+                          year: 'numeric', 
+                          month: 'short', 
+                          day: 'numeric' 
+                        })}</span>
+                      </div>
+                    </div>
+                    {event.time && (
+                      <div className="detail-item">
+                        <FaClock className="detail-icon" />
+                        <div>
+                          <span className="detail-label">Time</span>
+                          <span className="detail-value">{event.time}</span>
+                        </div>
+                      </div>
+                    )}
+                    {event.location && (
+                      <div className="detail-item">
+                        <FaMapMarkerAlt className="detail-icon" />
+                        <div>
+                          <span className="detail-label">Location</span>
+                          <span className="detail-value">{event.location}</span>
+                        </div>
+                      </div>
+                    )}
+                    {event.capacity !== null && (
+                      <div className="detail-item">
+                        <FaUsers className="detail-icon" />
+                        <div>
+                          <span className="detail-label">Capacity</span>
+                          <span className="detail-value">
+                            {event.registrations_count}/{event.capacity}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    {event.registration_link && (
+                      <div className="detail-item">
+                        <FaLink className="detail-icon" />
+                        <div>
+                          <span className="detail-label">Registration</span>
+                          <a href={event.registration_link} target="_blank" rel="noopener noreferrer" className="detail-link">
+                            View Link
+                          </a>
+                        </div>
+                      </div>
                     )}
                   </div>
-                </div>
-                
-                <div className="event-details-modern">
-                  <div className="detail-item">
-                    <FaCalendarAlt className="detail-icon" />
-                    <div>
-                      <span className="detail-label">Date</span>
-                      <span className="detail-value">{new Date(event.date).toLocaleDateString('en-US', { 
-                        weekday: 'short', 
-                        year: 'numeric', 
-                        month: 'short', 
-                        day: 'numeric' 
-                      })}</span>
-                    </div>
-                  </div>
-                  {event.time && (
-                    <div className="detail-item">
-                      <FaClock className="detail-icon" />
-                      <div>
-                        <span className="detail-label">Time</span>
-                        <span className="detail-value">{event.time}</span>
-                      </div>
-                    </div>
-                  )}
-                  {event.location && (
-                    <div className="detail-item">
-                      <FaMapMarkerAlt className="detail-icon" />
-                      <div>
-                        <span className="detail-label">Location</span>
-                        <span className="detail-value">{event.location}</span>
-                      </div>
-                    </div>
-                  )}
-                  {event.registration_link && (
-                    <div className="detail-item">
-                      <FaLink className="detail-icon" />
-                      <div>
-                        <span className="detail-label">Registration</span>
-                        <a href={event.registration_link} target="_blank" rel="noopener noreferrer" className="detail-link">
-                          View Link
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
 
-                <div className="event-actions-modern">
-                  <button 
-                    className="action-btn view-btn" 
-                    onClick={() => handleViewRegistrations(event)}
-                    title="View Registrations"
-                  >
-                    <FaEye />
-                    <span>View</span>
-                  </button>
-                  <button 
-                    className="action-btn edit-btn" 
-                    onClick={() => handleEdit(event)}
-                    title="Edit Event"
-                  >
-                    <FaEdit />
-                    <span>Edit</span>
-                  </button>
-                  <button 
-                    className="action-btn delete-btn" 
-                    onClick={() => handleDelete(event.id)}
-                    title="Delete Event"
-                  >
-                    <FaTrash />
-                    <span>Delete</span>
-                  </button>
+                  <div className="event-actions-modern">
+                    <button 
+                      className="action-btn view-btn" 
+                      onClick={() => handleViewRegistrations(event)}
+                      title="View Registrations"
+                    >
+                      <FaEye />
+                      <span>View</span>
+                    </button>
+                    <button 
+                      className="action-btn edit-btn" 
+                      onClick={() => handleEdit(event)}
+                      title="Edit Event"
+                    >
+                      <FaEdit />
+                      <span>Edit</span>
+                    </button>
+                    <button 
+                      className="action-btn delete-btn" 
+                      onClick={() => handleDelete(event.id)}
+                      title="Delete Event"
+                    >
+                      <FaTrash />
+                      <span>Delete</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
         )}
       </section>
 
@@ -296,7 +428,11 @@ function AdminDashboard() {
       {showCreateForm && (
         <div className="modal-overlay" onClick={handleFormClose}>
           <div onClick={(e) => e.stopPropagation()}>
-            <CreateEventForm onClose={handleFormClose} onEventCreated={handleFormClose} />
+            <CreateEventForm
+              onClose={handleFormClose}
+              onEventCreated={handleFormClose}
+              onToast={showToast}
+            />
           </div>
         </div>
       )}
@@ -337,6 +473,10 @@ function AdminDashboard() {
                 <label>Registration Link</label>
                 <input type="url" name="registration_link" value={formData.registration_link} onChange={handleEditChange} placeholder="https://..." required />
               </div>
+              <div className="form-group">
+                <label>Capacity</label>
+                <input type="number" name="capacity" value={formData.capacity || ''} onChange={handleEditChange} min="1" />
+              </div>
               <div className="form-actions">
                 <button type="button" className="btn-cancel" onClick={handleFormClose}>Cancel</button>
                 <button type="submit" className="btn-submit">Update Event</button>
@@ -354,6 +494,11 @@ function AdminDashboard() {
             <div className="modal-header">
               <h2>Registered Students</h2>
               <p className="event-title-modal">{selectedEvent.title}</p>
+            </div>
+            <div className="modal-actions">
+              <button className="create-btn-modern" onClick={handleExportRegistrations}>
+                Export CSV
+              </button>
             </div>
             <div className="modal-event-info">
               <div className="info-item">

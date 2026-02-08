@@ -19,6 +19,10 @@ Create `.env` files from the examples:
 - Frontend: copy `.env.example` to `.env`
 - Backend: copy `backend/.env.example` to `backend/.env`
 
+Backend envs:
+- `JWT_SECRET` is required for auth tokens.
+- `ADMIN_USERNAME` / `ADMIN_PASSWORD` are used to seed the admin user.
+
 ## Frontend (React)
 
 From this folder:
@@ -40,6 +44,21 @@ npm start
 ```
 
 The API runs on `http://localhost:5000`.
+
+### Database setup
+
+```
+node setupDatabase.js
+node setupRegistrationTables.js
+```
+
+### Seed admin user
+
+```
+node seedAdmin.js
+```
+
+Use the admin credentials from `backend/.env`.
 
 ## Production Build
 

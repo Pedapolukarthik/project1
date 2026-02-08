@@ -3,7 +3,7 @@ import API from '../api';
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaLink, FaPaperPlane, FaTimes } from 'react-icons/fa';
 import styles from './CreateEventForm.module.css';
 
-function CreateEventForm({ onClose, onEventCreated }) {
+function CreateEventForm({ onClose, onEventCreated, onToast }) {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -11,6 +11,7 @@ function CreateEventForm({ onClose, onEventCreated }) {
     time: '',
     location: '',
     registration_link: '',
+    capacity: '',
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,11 +24,23 @@ function CreateEventForm({ onClose, onEventCreated }) {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await API.post('/events/create', formData);
-      alert('Event created successfully!');
+      await API.post('/events/create', {
+        ...formData,
+        capacity: formData.capacity ? Number(formData.capacity) : null,
+      });
+      if (onToast) {
+        onToast('Event created successfully!', 'success');
+      } else {
+        alert('Event created successfully!');
+      }
       onEventCreated(); // close form + refresh
     } catch (err) {
-      alert(`Event creation failed: ${err.response?.data?.message || err.message}`);
+      const message = err.response?.data?.message || err.message;
+      if (onToast) {
+        onToast(`Event creation failed: ${message}`, 'error');
+      } else {
+        alert(`Event creation failed: ${message}`);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -124,6 +137,21 @@ function CreateEventForm({ onClose, onEventCreated }) {
             name="registration_link"
             type="url"
             value={formData.registration_link}
+            onChange={handleChange}
+            className={styles.createEventFormInput}
+          />
+        </div>
+
+        <div className={styles.createEventFormGroup}>
+          <label htmlFor="capacity" className={styles.createEventFormLabel}>
+            Capacity
+          </label>
+          <input
+            id="capacity"
+            name="capacity"
+            type="number"
+            min="1"
+            value={formData.capacity}
             onChange={handleChange}
             className={styles.createEventFormInput}
           />

@@ -12,7 +12,10 @@ function EditEventForm({ event, onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await API.put(`/events/update/${formData.id}`, formData);
+      await API.put(`/events/update/${formData.id}`, {
+        ...formData,
+        capacity: formData.capacity ? Number(formData.capacity) : null,
+      });
       onClose();
     } catch (error) {
       console.error("Update failed", error);
@@ -32,6 +35,7 @@ function EditEventForm({ event, onClose }) {
         <input className="createEventFormInput" type="time" name="time" value={formData.time} onChange={handleChange} required />
         <input className="createEventFormInput" name="location" value={formData.location} onChange={handleChange} placeholder="Location" required />
         <input className="createEventFormInput" name="registration_link" value={formData.registration_link} onChange={handleChange} placeholder="Registration Link" required />
+        <input className="createEventFormInput" type="number" name="capacity" value={formData.capacity || ''} onChange={handleChange} placeholder="Capacity" />
         <button type="submit" className="createEventFormSubmitBtn">Update Event</button>
       </form>
     </div>

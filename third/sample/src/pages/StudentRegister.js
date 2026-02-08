@@ -23,8 +23,14 @@ function StudentRegister() {
         password,
       });
 
-      alert(res.data.message); // "Registration successful"
-      navigate('/'); // Redirect to login page
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userRole', res.data.user?.role || 'student');
+        localStorage.setItem('userId', res.data.user?.id || '');
+      }
+      alert(res.data.message || 'Registration successful');
+      navigate('/student-dashboard');
     } catch (err) {
       console.error("Register Error:", err); // ✅ Debug log
       const msg =

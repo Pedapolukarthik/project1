@@ -23,13 +23,14 @@ function StudentLogin() {
 });
 
       if (res.status === 200 && res.data.message === 'Login successful') {
-        // Save username to localStorage so it can be used for registration
-        localStorage.setItem('username', username);
+        localStorage.setItem('username', res.data.user?.username || username);
+        localStorage.setItem('token', res.data.token || '');
         localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', 'student');
+        localStorage.setItem('userRole', res.data.user?.role || 'student');
+        localStorage.setItem('userId', res.data.user?.id || '');
         navigate('/student-dashboard'); // ✅ Navigate on success
       } else {
-        alert('Login failed'); // unlikely, but fallback
+        alert('Login failed'); // fallback
       }
 
     } catch (err) {
